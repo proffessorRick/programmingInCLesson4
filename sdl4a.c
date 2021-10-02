@@ -77,7 +77,6 @@ typedef enum _firestate_ {
   SHOOT_FIRST  = 1,
 } firestate;
 
-// Added: speed in both directions and rotation angle:
 typedef struct _player_ {
   int x;
   int y;
@@ -97,6 +96,14 @@ typedef struct _player_ {
   firestate gunstate;
 } player;
 
+// A New TypeDef To Create No Playable Characters //
+typedef struct _npc_ {
+  int x;
+  int y;
+  SDL_Texture *txtr_npc;
+  int counterIdle;
+} npc;
+
 typedef enum _keystate_ {
   UP = 0,
   DOWN = 1
@@ -105,10 +112,11 @@ typedef enum _keystate_ {
 void handle_key(SDL_KeyboardEvent *keyevent, keystate updown, player *tha_playa);
 void makeBullet(player *tha_playa);
 void travelBullet();
-
 void createMuzzleFlash(player *tha_playa);
-
 void showPlayerState(player *tha_playa);
+
+void showNpcState(npc *tha_npc);
+
 // This function has changed because mouse movement was added:
 void process_input(player *tha_playa, mouse *tha_mouse);
 // This function has changed because mouse movement was added:
@@ -135,8 +143,9 @@ int main(int argc, char *argv[]) {
   (void)argc;
   (void)argv;
 
-  player blorp = {(SCREEN_WIDTH / 2), (SCREEN_HEIGHT / 2), 0.0f, 0.0f, UP, UP, UP, UP, 0.0, NULL, NULL, 0, 0, 0, 0};
-	
+  player blorp 	= {(SCREEN_WIDTH / 2), (SCREEN_HEIGHT / 2), 0.0f, 0.0f, UP, UP, UP, UP, 0.0, NULL, NULL, 0, 0, 0, 0};
+  npc	 zombie = {100, 100, NULL, 0};
+
   // New: Mouse is a type representing a struct containing x and y coords of mouse pointer:
   mouse mousepointer;
 	
@@ -179,6 +188,9 @@ int main(int argc, char *argv[]) {
     // # Actuator Output Buffering #
     // Also takes texture rotation into account:
     showPlayerState(&blorp);
+    showNpcState(&zombie);
+    
+    blit_angled(zombie.txtr_npc, zombie.x, zombie.y, 0);
     blit_angled(blorp.txtr_feet, blorp.x, blorp.y, blorp.angle);
     blit_angled(blorp.txtr_body, blorp.x, blorp.y, blorp.angle);
 
@@ -191,6 +203,25 @@ int main(int argc, char *argv[]) {
   }
 
   return 0;
+}
+
+void showNpcState(npc *tha_npc) {
+  char *txtrIdleZombie[17] = {
+    "gfx/monsters/skeleton-idle_0.png",  "gfx/monsters/skeleton-idle_1.png",
+    "gfx/monsters/skeleton-idle_2.png",  "gfx/monsters/skeleton-idle_3.png",
+    "gfx/monsters/skeleton-idle_4.png",  "gfx/monsters/skeleton-idle_5.png",
+    "gfx/monsters/skeleton-idle_6.png",  "gfx/monsters/skeleton-idle_7.png",
+    "gfx/monsters/skeleton-idle_8.png",  "gfx/monsters/skeleton-idle_9.png",
+    "gfx/monsters/skeleton-idle_10.png", "gfx/monsters/skeleton-idle_11.png",
+    "gfx/monsters/skeleton-idle_12.png", "gfx/monsters/skeleton-idle_13.png",
+    "gfx/monsters/skeleton-idle_14.png", "gfx/monsters/skeleton-idle_15.png",
+    "gfx/monsters/skeleton-idle_16.png",
+  };
+
+  if (tha_npc->counterIdle == 17) tha_npc->counterIdle = 0;
+
+  tha_npc->txtr_npc = load_texture(txtrIdleZombie[tha_npc->counterIdle]);
+  tha_npc->counterIdle = tha_npc->counterIdle + 1;
 }
 
 void showPlayerState(player *tha_playa) {
